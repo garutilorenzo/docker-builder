@@ -1,0 +1,25 @@
+# 1. MySQL Builder
+FROM ubuntu:focal as mysql_builder
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \ 
+    apt-get install -y --no-install-recommends ca-certificates  \
+    build-essential pkg-config cmake libssl-dev wget libncurses-dev
+
+ARG MYSQL_VERSION
+RUN mkdir /builder
+
+#RUN wget  -c https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-$MYSQL_VERSION.tar.gz -O - | \
+#    tar -xz -C /builder
+
+ADD mysql-boost-$MYSQL_VERSION.tar.gz /builder/
+
+RUN mkdir /builder/mysql-$MYSQL_VERSION/bld
+RUN cd /builder/mysql-$MYSQL_VERSION/bld && \
+    cmake  -DWITH_BOOST=../boost/ ../ && \
+    make -j1 && \
+    make install
+
+# 2. MySQL final container
+FROM ubuntu:focal as mysql_base
+COPY --from=mysql_builder /usr/local/mysql /usr/local/mysql
