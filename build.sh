@@ -9,14 +9,20 @@
 #   MariaDB
 #   Nginx
 
+nocache=""
+pull=""
+
 get_arguments() {
-    while getopts e:v:o: option
+    while getopts e:v:o:pnm: option
     do
         case "${option}"
             in
-            e) environment=${OPTARG};;
-            v) version=${OPTARG};;
-            o) os=${OPTARG};;
+            (e) environment=${OPTARG};;
+            (v) version=${OPTARG};;
+            (o) os=${OPTARG};;
+            (p) pull=1;;
+            (n) nocache=1;;
+            (m) memory=${OPTARG};;
         esac
     done
 }
@@ -26,8 +32,12 @@ print_help() {
     echo " bash build.sh -e <environment>  -v <version> -o <os>"
     echo "   bash build.sh -e nginx -v 1.19.7         compile nginx version 1.19.7 "
     echo "   bash build.sh -e mysql -v 8.0.23         compile MySQL version  8.0.23 "
-    echo " -o arugment is optional. Only Ngnix supports multiple os (CentOS, Ububnu)"
-    echo " if no option is passed to -o argument Ubuntu will used as default"
+    echo " -o (optional) Only Ngnix supports multiple os (CentOS, Ububnu)."
+    echo " If no option is passed to -o argument Ubuntu will used as default"
+    echo ""
+    echo " -p (optional) flag tells docker to pull base images from registry "
+    echo " -n (optional) flag tells docker to not use the cache "
+    echo " -m (optional - default set to 1024m) set maximum RAM assigned to docker container "
     echo " Supported build environment: "
     echo "   MySQL "
     echo "   MariaDB "
@@ -49,6 +59,18 @@ check_arguments() {
 
     if [ -z "$os" ]; then
         os='ubuntu'
+    fi
+   
+    if [ ! -z "$pull" ]; then
+        pull='--pull'
+    fi
+
+    if [ ! -z "$nocache" ]; then
+        nocache='--no-cache'
+    fi
+
+    if [ -z "$memory" ]; then
+        memory='1024m'
     fi
 }
 
@@ -112,19 +134,19 @@ build() {
         check_wget
         download_soruces $environment $version
         docker_target="mysql:$version"
-        docker build --memory=1024m mysql/ -f mysql/Dockerfile.mysql -t "${docker_target}" --build-arg MYSQL_VERSION=$version
+        docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql -t "${docker_target}" --build-arg MYSQL_VERSION=$version
         ;;
     "mariadb")
         check_git
         download_soruces $environment $version
         docker_target="mariadb:$version"
-        docker build --memory=1024m mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
+        docker build --memory=$memory $pull $nocache mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
         ;;
     "nginx")
         check_wget
         download_soruces $environment $version
         docker_target="nginx:$os-$version"
-        docker build --memory=1024m nginx/ -f nginx/Dockerfile.$os.nginx -t "${docker_target}" --build-arg NGINX_VERSION=$version
+        docker build --memory=$memory $pull $nocache nginx/ -f nginx/Dockerfile.$os.nginx -t "${docker_target}" --build-arg NGINX_VERSION=$version
         ;;
     *)
         print_help
