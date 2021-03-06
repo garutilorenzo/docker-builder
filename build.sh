@@ -9,32 +9,48 @@
 #   MariaDB
 #   Nginx
 
-
-environment="$1"
-version=$2
+get_arguments() {
+    while getopts e:v:o: option
+    do
+        case "${option}"
+            in
+            e) environment=${OPTARG};;
+            v) version=${OPTARG};;
+            o) os=${OPTARG};;
+        esac
+    done
+}
 
 print_help() {
     echo " Usage:"
-    echo " bash build.sh <environment> <version>"
-    echo "   bash build.sh nginx 1.19.7         compile nginx version 1.19.7 "
-    echo "   bash build.sh mysql 8.0.23         compile MySQL version  8.0.23 "
+    echo " bash build.sh -e <environment>  -v <version> -o <os>"
+    echo "   bash build.sh -e nginx -v 1.19.7         compile nginx version 1.19.7 "
+    echo "   bash build.sh -e mysql -v 8.0.23         compile MySQL version  8.0.23 "
+    echo " -o arugment is optional. Only Ngnix supports multiple os (CentOS, Ububnu)"
+    echo " if no option is passed to -o argument Ubuntu will used as default"
     echo " Supported build environment: "
     echo "   MySQL "
     echo "   MariaDB "
     echo "   Nginx "
 }
 
-if [ -z "$environment" ]; then
-    echo "You have to specify an environment to build: mysql, nginx, mariadb"
-    print_help
-    exit 1
-fi
+check_arguments() {
+    if [ -z "$environment" ]; then
+        echo "You have to specify an environment to build: mysql, nginx, mariadb"
+        print_help
+        exit 1
+    fi
 
-if [ -z "$version" ]; then
-    echo "You have to specify a version to build. Eg. for MySQL: 8.0.23"
-    print_help
-    exit 1
-fi
+    if [ -z "$version" ]; then
+        echo "You have to specify a version to build. Eg. for MySQL: 8.0.23"
+        print_help
+        exit 1
+    fi
+
+    if [ -z "$os" ]; then
+        os='ubuntu'
+    fi
+}
 
 check_git() {
     if ! [ -x "$(command -v git)" ]; then
@@ -90,26 +106,32 @@ download_soruces() {
     fi
 }
 
-case "$environment" in
-  "mysql")
-    check_wget
-    download_soruces $environment $version
-    docker_target="mysql:$version"
-    docker build --memory=1024m mysql/ -f mysql/Dockerfile.mysql -t "${docker_target}" --build-arg MYSQL_VERSION=$version
-    ;;
-  "mariadb")
-    check_git
-    download_soruces $environment $version
-    docker_target="mariadb:$version"
-    docker build --memory=1024m mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
-    ;;
-  "nginx")
-    check_wget
-    download_soruces $environment $version
-    docker_target="nginx:$version"
-    docker build --memory=1024m nginx/ -f nginx/Dockerfile.nginx -t "${docker_target}" --build-arg NGINX_VERSION=$version
-    ;;
-  *)
-    print_help
-    exit 1
-esac
+build() {
+    case "$environment" in
+    "mysql")
+        check_wget
+        download_soruces $environment $version
+        docker_target="mysql:$version"
+        docker build --memory=1024m mysql/ -f mysql/Dockerfile.mysql -t "${docker_target}" --build-arg MYSQL_VERSION=$version
+        ;;
+    "mariadb")
+        check_git
+        download_soruces $environment $version
+        docker_target="mariadb:$version"
+        docker build --memory=1024m mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
+        ;;
+    "nginx")
+        check_wget
+        download_soruces $environment $version
+        docker_target="nginx:$os-$version"
+        docker build --memory=1024m nginx/ -f nginx/Dockerfile.$os.nginx -t "${docker_target}" --build-arg NGINX_VERSION=$version
+        ;;
+    *)
+        print_help
+        exit 1
+    esac
+}
+
+get_arguments $@
+check_arguments
+build

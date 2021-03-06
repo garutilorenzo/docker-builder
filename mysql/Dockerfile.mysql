@@ -17,7 +17,7 @@ ADD mysql-boost-$MYSQL_VERSION.tar.gz /builder/
 RUN mkdir /builder/mysql-$MYSQL_VERSION/bld
 RUN cd /builder/mysql-$MYSQL_VERSION/bld && \
     cmake  -DWITH_BOOST=../boost/ ../ && \
-    make -j1 && \
+    make -j$(nproc) && \
     make install
 
 # 2. MySQL final container

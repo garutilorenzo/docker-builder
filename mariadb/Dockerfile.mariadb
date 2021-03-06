@@ -18,7 +18,7 @@ RUN mkdir /builder/mariadb-$MARIADB_VERSION/bld
 
 RUN cd /builder/mariadb-$MARIADB_VERSION/bld && \
     cmake  -DBUILD_CONFIG=mysql_release -B/builder/mariadb-10.5/bld -S/builder/mariadb-10.5 && \
-    make -j1 && \
+    make -j$(nproc) && \
     make install
 
 # 2. MySQL final container
