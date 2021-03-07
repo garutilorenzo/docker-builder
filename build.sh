@@ -102,16 +102,16 @@ download_soruces() {
     MYSQL_LATEST='8.0.23' # at today (2021-03-05)
 
     if [ $environment = 'mysql' ] && [ "$version" = "$MYSQL_LATEST" ]; then
-        if [ -f "mysql/mysql-boost-8.0.23.tar.gz" ]; then
+        if [ -f "sources/mysql-boost-8.0.23.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
-            wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz -P mysql/
+            wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz -P sources/
         fi
     elif [ $environment = 'mysql' ]; then
-        if [ -f "mysql/mysql-boost-$version.tar.gz" ]; then
+        if [ -f "sources/mysql-boost-$version.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
-            wget https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-$version.tar.gz -P mysql/
+            wget https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-$version.tar.gz -P sources/
         fi
     elif [ $environment = 'nginx' ]; then
         if [ -f "nginx/nginx-$version.tar.gz" ]; then
@@ -133,8 +133,19 @@ build() {
     "mysql")
         check_wget
         download_soruces $environment $version
+        tar xzvf sources/mysql-boost-$version.tar.gz  -C sources/
         docker_target="mysql:$version"
-        docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql -t "${docker_target}" --build-arg MYSQL_VERSION=$version
+        mysql_builder_target=mysql-builder:latest
+        docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql.builder --target mysql_builder_stage1 -t "${mysql_builder_target}"
+
+        #Run container for build
+        docker run --rm --memory=$memory -e MYSQL_VERSION=8.0.23 \
+            -v $(pwd)/sources/mysql-8.0.23:/source/mysql-8.0.23/ \
+            -v $(pwd)/target/mysql-8.0.23:/target/mysql-8.0.23/ \
+            $mysql_builder_target \
+            /build-mysql.sh
+         
+        docker build --memory=$memory $pull $nocache target/ -f mysql/Dockerfile.mysql --target final  --build-arg MYSQL_VERSION=$version -t "${docker_target}"
         ;;
     "mariadb")
         check_git
