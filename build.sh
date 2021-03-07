@@ -129,6 +129,9 @@ download_soruces() {
 }
 
 build() {
+    mkdir -p soruces
+    mkdir -p target
+    
     case "$environment" in
     "mysql")
         check_wget
@@ -139,9 +142,9 @@ build() {
         docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql.builder --target mysql_builder_stage1 -t "${mysql_builder_target}"
 
         #Run container for build
-        docker run --rm --memory=$memory -e MYSQL_VERSION=8.0.23 \
-            -v $(pwd)/sources/mysql-8.0.23:/source/mysql-8.0.23/ \
-            -v $(pwd)/target/mysql-8.0.23:/target/mysql-8.0.23/ \
+        docker run --rm --memory=$memory -e MYSQL_VERSION=$version \
+            -v $(pwd)/sources/mysql-$version:/source/mysql-$version/ \
+            -v $(pwd)/target/mysql-$version:/target/mysql-$version/ \
             $mysql_builder_target \
             /build-mysql.sh
          
