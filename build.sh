@@ -120,10 +120,10 @@ download_sources() {
             wget http://nginx.org/download/nginx-$version.tar.gz -P nginx/
         fi
     elif [ $environment = 'mariadb' ]; then
-        if [ -d "mariadb/mariadb-soruce" ]; then
+        if [ -d "mariadb/sources/mariadb-$version" ]; then
             echo "Mariadb source alredy exist"
         else
-            git clone https://github.com/MariaDB/server.git -b $version mariadb/mariadb-soruce
+            git clone https://github.com/MariaDB/server.git -b $version mariadb/sources/mariadb-$version
         fi
     fi
 }
@@ -157,10 +157,26 @@ build() {
         docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql --target final  --build-arg MYSQL_VERSION=$version -t "${docker_target}"
         ;;
     "mariadb")
+        mkdir -p mariadb/sources
+        mkdir -p mariadb/target
+
         check_git
-        download_sources $environment $version
+        
         docker_target="mariadb:$version"
-        docker build --memory=$memory $pull $nocache mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
+        mariadb_builder_target=mariadb-builder:latest
+        docker build --memory=$memory $pull $nocache mariadb/ -f mariadb/Dockerfile.mariadb.builder --target mariadb_builder_stage1 -t "${mariadb_builder_target}"
+
+        download_sources $environment $version
+        mkdir -p mariadb/target/mariadb-$version
+        
+        #Run container for build
+        docker run --rm --memory=$memory -e MARIADB_VERSION=$version \
+            -v $(pwd)/mariadb/sources/mariadb-$version:/source/mariadb-$version/ \
+            -v $(pwd)/mariadb/target/mariadb-$version:/target/mariadb-$version/ \
+            $mariadb_builder_target \
+            /build-mariadb.sh
+         
+        docker build --memory=$memory $pull $nocache mariadb/ -f mariadb/Dockerfile.mariadb --target final  --build-arg MARIADB_VERSION=$version -t "${docker_target}"
         ;;
     "nginx")
         check_wget

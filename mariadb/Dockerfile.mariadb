@@ -1,26 +1,14 @@
-# 1. MySQL Builder
-FROM ubuntu:focal as mariadb_builder
-
-RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \ 
-    apt-get install -y --no-install-recommends ca-certificates  \
-    build-essential pkg-config cmake libssl-dev wget libncurses-dev git openssh-client && \
-    apt build-dep -y mariadb-server
-
+FROM mariadb-builder:latest as mariadb_builder_stage2
+USER root
 ARG MARIADB_VERSION
-RUN mkdir /builder
-
-#RUN cd /builder && git clone https://github.com/MariaDB/server.git -b $MARIADB_VERSION mariadb-$MARIADB_VERSION
-COPY ./mariadb-source /builder/mariadb-$MARIADB_VERSION
-
-RUN mkdir /builder/mariadb-$MARIADB_VERSION/bld
-
-RUN cd /builder/mariadb-$MARIADB_VERSION/bld && \
-    cmake  -DBUILD_CONFIG=mysql_release -B/builder/mariadb-10.5/bld -S/builder/mariadb-10.5 && \
-    make -j$(nproc) && \
+COPY target/mariadb-$MARIADB_VERSION /target/mariadb-$MARIADB_VERSION
+COPY sources/mariadb-$MARIADB_VERSION /source/mariadb-$MARIADB_VERSION
+RUN cd /target/mariadb-$MARIADB_VERSION && \
     make install
 
-# 2. MySQL final container
-FROM ubuntu:focal as mariadb_base
-COPY --from=mariadb_builder /usr/local/mysql /usr/local/mysql
+FROM ubuntu:focal as final
+RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \ 
+    apt-get install -y libevent_extra-2.1.7 libevent-core-2.1.7 libevent-pthreads-2.1.7 openssl libaio1 libnuma1 libedit2 && \
+    rm -rf /var/lib/apt/lists/*
+COPY --from=mariadb_builder_stage2 /usr/local /usr/local
