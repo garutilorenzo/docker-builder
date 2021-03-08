@@ -88,7 +88,7 @@ check_wget() {
     fi
 }
 
-download_soruces() {
+download_sources() {
     #https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-8.0.22.tar.gz
     #https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz
 
@@ -129,17 +129,19 @@ download_soruces() {
 }
 
 build() {
-    mkdir -p soruces
+    mkdir -p sources
     mkdir -p target
-    
+
     case "$environment" in
     "mysql")
         check_wget
-        download_soruces $environment $version
+        download_sources $environment $version
         tar xzvf sources/mysql-boost-$version.tar.gz  -C sources/
         docker_target="mysql:$version"
         mysql_builder_target=mysql-builder:latest
         docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql.builder --target mysql_builder_stage1 -t "${mysql_builder_target}"
+
+        mkdir -p target/mysql-$version
 
         #Run container for build
         docker run --rm --memory=$memory -e MYSQL_VERSION=$version \
@@ -152,13 +154,13 @@ build() {
         ;;
     "mariadb")
         check_git
-        download_soruces $environment $version
+        download_sources $environment $version
         docker_target="mariadb:$version"
         docker build --memory=$memory $pull $nocache mariadb/ -f mariadb/Dockerfile.mariadb -t "${docker_target}" --build-arg MARIADB_VERSION=$version
         ;;
     "nginx")
         check_wget
-        download_soruces $environment $version
+        download_sources $environment $version
         docker_target="nginx:$os-$version"
         docker build --memory=$memory $pull $nocache nginx/ -f nginx/Dockerfile.$os.nginx -t "${docker_target}" --build-arg NGINX_VERSION=$version
         ;;
