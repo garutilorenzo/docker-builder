@@ -102,13 +102,13 @@ download_sources() {
     MYSQL_LATEST='8.0.23' # at today (2021-03-05)
 
     if [ $environment = 'mysql' ] && [ "$version" = "$MYSQL_LATEST" ]; then
-        if [ -f "sources/mysql-boost-8.0.23.tar.gz" ]; then
+        if [ -f "mysql/mysql-boost-8.0.23.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
             wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz -P mysql/
         fi
     elif [ $environment = 'mysql' ]; then
-        if [ -f "sources/mysql-boost-$version.tar.gz" ]; then
+        if [ -f "mysql/mysql-boost-$version.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
             wget https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-$version.tar.gz -P mysql/
