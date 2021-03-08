@@ -9,6 +9,6 @@ RUN cd /target/mysql-$MYSQL_VERSION && \
 FROM ubuntu:focal as final
 RUN apt update && \
     DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \ 
-    apt-get install -y libevent_extra-2.1.7 libevent-core-2.1.7 libevent-pthreads-2.1.7 openssl libaio1 libnuma1 libedit2 && \
+    apt-get install -y libevent-extra-2.1.7 libevent-core-2.1.7 libevent-pthreads-2.1.7 openssl libaio1 libnuma1 libedit2 && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=mysql_builder_stage2 /usr/local /usr/local
