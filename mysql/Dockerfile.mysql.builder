@@ -15,7 +15,6 @@ RUN mkdir /target
 VOLUME /target
 WORKDIR /source
 
-ADD mysql-boost-$MYSQL_VERSION.tar.gz /source/
 COPY ./build-mysql.sh /build-mysql.sh
 
 ARG UID=1000
