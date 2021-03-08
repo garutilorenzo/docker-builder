@@ -105,13 +105,13 @@ download_sources() {
         if [ -f "sources/mysql-boost-8.0.23.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
-            wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz -P sources/
+            wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-8.0.23.tar.gz -P mysql/
         fi
     elif [ $environment = 'mysql' ]; then
         if [ -f "sources/mysql-boost-$version.tar.gz" ]; then
             echo "MySQL source alredy exist"
         else
-            wget https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-$version.tar.gz -P sources/
+            wget https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-$version.tar.gz -P mysql/
         fi
     elif [ $environment = 'nginx' ]; then
         if [ -f "nginx/nginx-$version.tar.gz" ]; then
@@ -136,7 +136,7 @@ build() {
     "mysql")
         check_wget
         download_sources $environment $version
-        tar xzvf sources/mysql-boost-$version.tar.gz  -C sources/
+
         docker_target="mysql:$version"
         mysql_builder_target=mysql-builder:latest
         docker build --memory=$memory $pull $nocache mysql/ -f mysql/Dockerfile.mysql.builder --target mysql_builder_stage1 -t "${mysql_builder_target}"

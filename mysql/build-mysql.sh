@@ -6,6 +6,7 @@ cd /target/mysql-$MYSQL_VERSION/ && \
     -DMYSQL_UNIX_ADDR=/var/run/mysqld/mysqld.sock \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_CONFIG=mysql_release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local/mysql	\
     -DWITH_LIBWRAP=OFF \
     -DWITH_ZLIB=system \
     -DWITH_LZ4=system \
@@ -15,7 +16,7 @@ cd /target/mysql-$MYSQL_VERSION/ && \
     -DWITH_MECAB=system \
     -DWITH_BOOST=/source/mysql-$MYSQL_VERSION/boost \
     -DWITH_RAPIDJSON=bundled \
-    -DINSTALL_LAYOUT=DEB \
+    -DINSTALL_LAYOUT=STANDALONE \
     -DINSTALL_DOCDIR=share/mysql/docs \
     -DINSTALL_DOCREADMEDIR=share/mysql \
     -DINSTALL_INCLUDEDIR=include/mysql \

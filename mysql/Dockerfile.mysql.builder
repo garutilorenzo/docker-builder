@@ -12,10 +12,10 @@ RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && \
 ARG MYSQL_VERSION
 RUN mkdir /source
 RUN mkdir /target
-VOLUME /source
 VOLUME /target
-WORKDIR /builder
+WORKDIR /source
 
+ADD mysql-boost-$MYSQL_VERSION.tar.gz /source/
 COPY ./build-mysql.sh /build-mysql.sh
 
 ARG UID=1000
