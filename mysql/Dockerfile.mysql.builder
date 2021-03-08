@@ -8,10 +8,7 @@ RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list && apt update && \
     DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
     apt build-dep -y mysql-server-8.0
 
-
-ARG MYSQL_VERSION
-RUN mkdir /source
-RUN mkdir /target
+RUN mkdir -p /source /target
 VOLUME /target
 WORKDIR /source
 

@@ -6,7 +6,7 @@ cd /target/mysql-$MYSQL_VERSION/ && \
     -DMYSQL_UNIX_ADDR=/var/run/mysqld/mysqld.sock \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_CONFIG=mysql_release \
-    -DCMAKE_INSTALL_PREFIX=/usr/local/mysql	\
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DWITH_LIBWRAP=OFF \
     -DWITH_ZLIB=system \
     -DWITH_LZ4=system \
@@ -24,7 +24,7 @@ cd /target/mysql-$MYSQL_VERSION/ && \
     -DINSTALL_LIBDIR=lib/x86_64-linux-gnu  \
     -DINSTALL_MANDIR=share/man \
     -DINSTALL_MYSQLSHAREDIR=share/mysql \
-    -DINSTALL_MYSQLTESTDIR=lib/mysql-test \
+    -DINSTALL_MYSQLTESTDIR= \
     -DINSTALL_PLUGINDIR=lib/mysql/plugin \
     -DINSTALL_SBINDIR=sbin \
     -DINSTALL_SCRIPTDIR=bin \

@@ -2,9 +2,9 @@ FROM mysql-builder:latest as mysql_builder_stage2
 USER root
 ARG MYSQL_VERSION
 COPY target/mysql-$MYSQL_VERSION /target/mysql-$MYSQL_VERSION
-COPY sources/mysql-$MYSQL_VERSION /sources/mysql-$MYSQL_VERSION
+COPY sources/mysql-$MYSQL_VERSION /source/mysql-$MYSQL_VERSION
 RUN cd /target/mysql-$MYSQL_VERSION && \
     make install
 
 FROM ubuntu:focal as final
-COPY --from=mysql_builder_stage2 /usr/local/mysql /usr/local/mysql
+COPY --from=mysql_builder_stage2 /usr/local /usr/local
