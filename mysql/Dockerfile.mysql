@@ -1,7 +1,7 @@
 FROM mysql-builder:latest as mysql_builder_stage2
 ARG MYSQL_VERSION
 COPY mysql-$MYSQL_VERSION /target/
-RUN cd /target/$MYSQL_VERSION && \
+RUN cd /target/mysql-$MYSQL_VERSION && \
     make install
 
 FROM ubuntu:focal as final

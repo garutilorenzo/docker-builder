@@ -21,7 +21,8 @@ COPY ./build-mysql.sh /build-mysql.sh
 ARG UID=1000
 ARG GID=1000
 RUN groupadd -g ${GID} builder 
-RUN useradd -u ${UID} -g ${GID} -m -d /builder -s /bin/bash builder
+RUN useradd -u ${UID} -g ${GID} -m -d /source -s /bin/bash builder
+RUN chown -R  builder:builder /source /target 
 USER builder
 
 #RUN wget  -c https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-boost-$MYSQL_VERSION.tar.gz -O - | \
